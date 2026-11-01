@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "board.h"
 #include "driver/gpio.h"
+#include "esp_log.h"
 #include "osdp/osdp_buz_state.h"
 #include "osdp/osdp_commands.h"
 #include "osdp/osdp_led_state.h"
@@ -15,11 +16,19 @@ static bool beep;
 static atomic_bool pending_beep;
 void reader_feedback_begin(void) {
   gpio_set_level(PIN_LED, 1);
-  gpio_set_direction(PIN_LED, GPIO_MODE_OUTPUT);
+  gpio_set_direction(PIN_LED, GPIO_MODE_INPUT_OUTPUT);
   gpio_set_level(PIN_BUZZER, 0);
   gpio_set_direction(PIN_BUZZER, reader_settings.buzzer_enabled
-                                     ? GPIO_MODE_OUTPUT
+                                     ? GPIO_MODE_INPUT_OUTPUT
                                      : GPIO_MODE_INPUT);
+}
+void reader_feedback_report(void) {
+  int led_pin = gpio_get_level(PIN_LED);
+  int buzzer_pin = gpio_get_level(PIN_BUZZER);
+  ESP_LOGI("feedback", "LED_GPIO8=%d pin=%d buzzer_GPIO3=%d buzzer_pin=%d "
+                       "buzzer_enabled=%u", !led_pin, led_pin,
+           reader_settings.buzzer_enabled && buzzer_pin, buzzer_pin,
+           reader_settings.buzzer_enabled);
 }
 void reader_feedback_read(void) { atomic_store(&pending_beep, true); }
 static bool color(uint8_t c) {

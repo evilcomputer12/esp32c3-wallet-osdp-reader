@@ -22,10 +22,13 @@ void reader_console_task(void *unused) {
     if (usb_serial_jtag_read_bytes(&ch, 1, pdMS_TO_TICKS(250)) == 1) {
       if (ch == 's' || ch == 'w' || ch == 'r')
         reader_report();
+      else if (ch == 'f')
+        reader_feedback_report();
       else if (ch == 'h' || ch == '?')
         ESP_LOGI(
             "console",
-            "s: status; w: wallet/reader status. No provisioning commands.");
+            "s: status; w: wallet/reader status; f: LED/buzzer pin readback. "
+            "No provisioning commands.");
     }
   }
 }

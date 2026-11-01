@@ -126,7 +126,8 @@ ATECC initialization retries every five seconds. PN532 initialization retries
 every two seconds. An absent SCBK prevents reader operation. Press `s` in the
 USB monitor for ATECC/NFC/SC state, attempts, queued credentials, failures and
 poll counts. It also reports OSDP RX/TX bytes, TX errors, task ticks and RX/DE
-pin levels; `h` prints help. There are no key-dumping or provisioning commands.
+pin levels; `f` reports LED/buzzer pin readback and whether the buzzer is enabled;
+`h` prints help. There are no key-dumping or provisioning commands.
 
 Run the separate [OSDP.Net controller](https://github.com/Z-bit-Systems-LLC/OSDP.Net)
 on its USB-to-RS-485 adapter: 9600 baud, PD address 0, Secure Channel enabled,
@@ -165,3 +166,29 @@ For Google's published demo, see the exact configuration and pass link in
 [the Google-authored sample app preserved here](https://github.com/kmandalas/smart-tap-sample-app/tree/192d1760bd8f44e8142dda6611c2a1314b35595b).
 That demo uses collector **20180608** and key version **1**. These values are
 specific to that demo; use your issuer's settings for your own passes.
+
+## 9. Check the LED and buzzer
+
+With a suitable active buzzer on GPIO3, set `buzzer_enabled=true` in your local
+configuration and reflash. A newly queued authenticated PKOC, Apple or Google
+credential produces one 100 ms beep. The default public configuration leaves
+the buzzer disabled. A duplicate presentation that queues no new event does
+not trigger another local beep.
+
+The onboard LED is controller-controlled: it does **not** light just because
+a pass was read. Have your access-control application send OSDP LED reader 0,
+LED 0, green on access grant and black to turn it off. Green maps to the blue
+onboard LED. The standalone interoperability test controller receives events
+but has no access policy and sends no automatic grant command.
+
+Press `f` in the USB console to inspect the actual pin levels. With both
+outputs off and the buzzer enabled, expect:
+
+```text
+LED_GPIO8=0 pin=1 buzzer_GPIO3=0 buzzer_pin=0 buzzer_enabled=1
+```
+
+LED on reads `LED_GPIO8=1 pin=0`; sounding reads `buzzer_GPIO3=1 buzzer_pin=1`.
+The input path remains enabled alongside the GPIO output so the readback is
+valid. This reports electrical logic levels; hearing the buzzer and seeing the
+LED are separate physical checks. Secure Channel loss clears both outputs.

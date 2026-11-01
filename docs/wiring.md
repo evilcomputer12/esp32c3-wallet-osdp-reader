@@ -65,16 +65,22 @@ from multiple breakout boards.
 
 ## Buzzer and LED
 
-The previous HW-512 buzzer was heard when driven from the STM32. That test does
-not establish its input current or suitability for the C3. Leave it disconnected
-and keep `buzzer_enabled=false` until its signal interface is verified. GPIO3
-provides on/off logic for an active buzzer through an appropriate driver; there
-is no passive-buzzer PWM driver in this port.
+The bench HW-512 was connected with **S→GPIO3, +→3.3 V, −→GND**. The user
+confirmed hearing two OSDP-commanded beeps, and GPIO readback confirmed the
+on/off levels. The local configuration now enables it; the public example
+still defaults to `buzzer_enabled=false`. This functional test does not measure
+input current or establish the suitability of every HW-512 revision. Use an
+appropriate driver if the signal pin powers the transducer rather than acting
+as a logic input. GPIO3 supplies on/off control for an active buzzer; this port
+does not generate a passive-buzzer PWM tone.
 
 The onboard LED responds to OSDP LED 0 commands for reader 0. OSDP green maps
 to the physical blue LED. It represents **the controller's decision**; simply
 reading a credential does not grant access. If enabled, the short local beep
 means a credential was queued, not that the controller accepted it.
+The physical GPIO8 LED also passed an OSDP-controlled on/off/timed-on test,
+confirmed by both pin readback and user observation. Press `f` in the USB
+console for output levels; see [quickstart](quickstart.md#9-check-the-led-and-buzzer).
 
 The STM32 ST-Link is not used to program this board. Use the C3's native USB;
 leave the ST-Link disconnected during this migration.

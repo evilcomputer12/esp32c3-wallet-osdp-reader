@@ -19,9 +19,9 @@ linked. Public example configuration still contains no operational keys.
 |---|---:|
 | Physical Flash detected | 4,194,304 |
 | Factory application partition | 3,145,728 |
-| PlatformIO reported program use | 233,552 |
+| PlatformIO reported program use | 233,796 |
 | PlatformIO reported static RAM | 18,780 |
-| Application `.bin` file | 234,160 |
+| Application `.bin` file | 234,416 |
 
 Static RAM excludes dynamic task stacks, driver allocations, crypto allocations
 and other runtime heap use. The 3 MiB application partition is intentionally
@@ -31,7 +31,7 @@ data and a reserved, currently unused data partition.
 ## Checks completed
 
 - The complete ESP32-C3 application and bootloader compile/link with PlatformIO.
-- **18 C test executables pass** under AddressSanitizer and
+- **19 C test executables pass** under AddressSanitizer and
   UndefinedBehaviorSanitizer.
 - The wallet executable uses fixed encrypted fixtures created independently
   with Python cryptography/OpenSSL: both Apple derivations, a 16-byte GCM IV,
@@ -47,6 +47,10 @@ data and a reserved, currently unused data partition.
   errors, bounded MI chaining, successful chaining and wake/SAM-first startup
   command ordering. These are mock transport tests, not RF tests.
 - ATECC slot permission and presentation/removal suppression policies pass.
+- The production feedback module is compiled with GPIO/clock boundary stubs
+  to check the 100 ms local beep, controller-only LED behavior, timed OSDP
+  patterns, invalid/unauthorized commands, disabled-buzzer behavior, session
+  loss cleanup and timer wraparound.
 - The previous project's independent phone emulator also passed **30 scenarios**
   against the new C `wallet_driver`. That Python development tool remains in
   the STM32 repository; this repository contains only C test programs and
@@ -135,6 +139,21 @@ the next successful read of the same credential was suppressed while the
 presentation remained recorded. These observations do not establish that
 transport recovery or physical removal detection is reliable under all conditions.
 
+## LED and buzzer checks
+
+The user confirmed S→GPIO3, +→3.3 V and −→GND for the bench buzzer. The local
+configuration was enabled and flashed; PKOC, Apple and Google stayed enabled.
+GPIO input/output mode now permits physical pin readback using USB command `f`.
+The user requested **controller-only LED behavior**, so a read beeps but does
+not light the LED or imply access grant.
+
+An OSDP.Net test over Secure Channel sent two 300 ms beeps, checked timer
+expiry and explicit OFF, then drove the LED on for five seconds, off for three
+and temporarily on for five. Every command was acknowledged and all GPIO3/8
+readbacks matched. The user confirmed both the audible and visible sequences.
+The test ended with `secure=True`, `disconnects=0` and both outputs off.
+Temporary desktop test tooling stayed outside this C firmware repository.
+
 ## Remaining hardware acceptance checks
 
 Passing a host test or initializing the NFC chip does not satisfy these checks:
@@ -150,8 +169,9 @@ Passing a host test or initializing the NFC chip does not satisfy these checks:
    on an unsecured connection and a sustained soak test.
 6. Extend the passing PKOC authentication/delivery/held-card check to repeated
    removal and re-presentation cycles.
-7. Test LED feedback, reader unplug/reconnect and controller disconnect during
-   authentication. Old queued events must not survive a new session.
+7. Extend the passing LED/buzzer checks to reader unplug/reconnect and
+   controller disconnect during authentication. Old queued events must not
+   survive a new session.
 8. Extend the successful Google and Apple demo tests to sustained holding,
    removal, other matched passes and phones. ECP discovery and compressed
    bundles are unsupported.

@@ -23,6 +23,7 @@ void reader_pd_task(void *);
 void reader_nfc_task(void *);
 void reader_console_task(void *);
 void reader_feedback_begin(void);
+void reader_feedback_report(void);
 void reader_feedback_read(void);
 void reader_feedback_tick(bool);
 int reader_feedback_command(uint8_t, const uint8_t *, size_t, bool);
