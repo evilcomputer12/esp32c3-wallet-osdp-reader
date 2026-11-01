@@ -125,7 +125,8 @@ order because they run in separate tasks):
 ATECC initialization retries every five seconds. PN532 initialization retries
 every two seconds. An absent SCBK prevents reader operation. Press `s` in the
 USB monitor for ATECC/NFC/SC state, attempts, queued credentials, failures and
-poll counts; `h` prints help. There are no key-dumping or provisioning commands.
+poll counts. It also reports OSDP RX/TX bytes, TX errors, task ticks and RX/DE
+pin levels; `h` prints help. There are no key-dumping or provisioning commands.
 
 Run the separate [OSDP.Net controller](https://github.com/Z-bit-Systems-LLC/OSDP.Net)
 on its USB-to-RS-485 adapter: 9600 baud, PD address 0, Secure Channel enabled,

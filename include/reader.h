@@ -16,6 +16,7 @@ int reader_atecc_wallet_sign(unsigned, const uint8_t[32], uint8_t[64]);
 int reader_atecc_wallet_ecdh(unsigned, const uint8_t[65], uint8_t[32]);
 bool reader_pd_begin(void);
 bool reader_pd_secure(void);
+void reader_pd_report(void);
 unsigned reader_pd_generation(void);
 bool reader_enqueue(const uint8_t *, size_t, uint16_t, unsigned);
 void reader_pd_task(void *);

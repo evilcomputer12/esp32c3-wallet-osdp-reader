@@ -73,6 +73,10 @@ static bool wake_pulse(void) {
   esp_rom_delay_us(80);
   gpio_set_level(PIN_ATECC_SDA, 1);
   esp_rom_delay_us(1500);
+  // Return GPIO ownership after the wake pulse before the I2C driver claims it.
+  // Reset leaves a pull-up on these output-capable pins; both lines stay idle.
+  gpio_reset_pin(PIN_ATECC_SDA);
+  gpio_reset_pin(PIN_ATECC_SCL);
   return bus_open();
 }
 ATCA_STATUS hal_i2c_init(ATCAIface iface, ATCAIfaceCfg *config) {

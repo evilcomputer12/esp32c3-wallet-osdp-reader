@@ -20,6 +20,7 @@ static osdp_sc_wolfcrypt_t sc;
 static uint8_t events[128], reply_buffer[64];
 static atomic_bool secure;
 static atomic_uint generation;
+static atomic_uint rx_bytes, tx_bytes, tx_errors, ticks;
 static uint32_t serial_number, queued_at;
 static QueueHandle_t incoming;
 typedef struct {
@@ -32,14 +33,23 @@ typedef struct {
 static int receive(void *u, uint8_t *out, size_t cap) {
   (void)u;
   int n = uart_read_bytes(OSDP_UART, out, cap, 0);
+  if (n > 0)
+    atomic_fetch_add(&rx_bytes, (unsigned)n);
   return n > 0 ? n : 0;
 }
 static int transmit(void *u, const uint8_t *data, size_t n) {
   (void)u;
-  if (uart_write_bytes(OSDP_UART, data, n) != (int)n)
+  if (uart_write_bytes(OSDP_UART, data, n) != (int)n) {
+    atomic_fetch_add(&tx_errors, 1);
     return 0;
+  }
   uint32_t ms = (uint32_t)((n * 10000 + OSDP_BAUD - 1) / OSDP_BAUD) + 20;
-  return uart_wait_tx_done(OSDP_UART, pdMS_TO_TICKS(ms)) == ESP_OK ? (int)n : 0;
+  if (uart_wait_tx_done(OSDP_UART, pdMS_TO_TICKS(ms)) != ESP_OK) {
+    atomic_fetch_add(&tx_errors, 1);
+    return 0;
+  }
+  atomic_fetch_add(&tx_bytes, (unsigned)n);
+  return (int)n;
 }
 static uint32_t now(void *u) {
   (void)u;
@@ -110,6 +120,7 @@ bool reader_pd_begin(void) {
       uart_set_mode(OSDP_UART, UART_MODE_RS485_HALF_DUPLEX) != ESP_OK)
     return false;
   gpio_pullup_en(PIN_RS485_RX);
+  gpio_input_enable(PIN_RS485_DE); // Readback only; UART still owns its output.
   incoming = xQueueCreate(4, sizeof(Event));
   if (!incoming)
     return false;
@@ -137,6 +148,12 @@ bool reader_pd_begin(void) {
                            NULL) == OSDP_OK;
 }
 bool reader_pd_secure(void) { return atomic_load(&secure); }
+void reader_pd_report(void) {
+  ESP_LOGI("osdp", "rx_bytes=%u tx_bytes=%u tx_errors=%u ticks=%u rx_pin=%d de_pin=%d",
+           atomic_load(&rx_bytes), atomic_load(&tx_bytes),
+           atomic_load(&tx_errors), atomic_load(&ticks),
+           gpio_get_level(PIN_RS485_RX), gpio_get_level(PIN_RS485_DE));
+}
 unsigned reader_pd_generation(void) { return atomic_load(&generation); }
 bool reader_enqueue(const uint8_t *credential, size_t n, uint16_t bits,
                     unsigned transaction_generation) {
@@ -155,6 +172,7 @@ void reader_pd_task(void *unused) {
   bool previous = false;
   for (;;) {
     osdp_pd_tick(&pd);
+    atomic_fetch_add(&ticks, 1);
     bool active = osdp_pd_is_online(&pd) && osdp_pd_sc_established(&pd);
     if (active != previous) {
       atomic_fetch_add(&generation, 1);

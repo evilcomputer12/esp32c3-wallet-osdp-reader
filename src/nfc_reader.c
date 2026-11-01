@@ -154,6 +154,7 @@ void reader_report(void) {
       reader_atecc_ready(), atomic_load(&nfc_ready), reader_pd_secure(),
       atomic_load(&attempts), atomic_load(&reported), atomic_load(&failures),
       atomic_load(&polls));
+  reader_pd_report();
 }
 void reader_nfc_task(void *unused) {
   (void)unused;

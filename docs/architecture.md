@@ -92,8 +92,8 @@ fails if a dependency update requires review. No submodule source is edited.
 
 At boot, `crypto_selftest.c` checks FIPS 197 AES-128/AES-256 encryption and
 decryption vectors plus SHA-256 of `abc`. It runs before concurrent crypto
-tasks, also initializing the hardware AES mutex. The hardware execution of
-these checks is still pending first flash; the host software path passes.
+tasks, also initializing the hardware AES mutex. These checks passed on the
+physical ESP32-C3 during the first flash, as well as on the host software path.
 
 The same build overlay corrects two ECB bulk dispatch branches in the pinned
 wolfCrypt source: with ESP-IDF, they must go through the existing per-block

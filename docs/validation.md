@@ -18,9 +18,9 @@ and their cryptographic algorithms are compiled and linked.
 |---|---:|
 | Physical Flash detected | 4,194,304 |
 | Factory application partition | 3,145,728 |
-| PlatformIO reported program use | 232,080 |
-| PlatformIO reported static RAM | 18,764 |
-| Application `.bin` file | 232,688 |
+| PlatformIO reported program use | 232,686 |
+| PlatformIO reported static RAM | 18,780 |
+| Application `.bin` file | 233,296 |
 
 Static RAM excludes dynamic task stacks, driver allocations, crypto allocations
 and other runtime heap use. The 3 MiB application partition is intentionally
@@ -58,18 +58,36 @@ Run the self-contained tests with the commands in [quickstart](quickstart.md).
 Test fixtures use explicitly public disposable keys, never the merchant keys
 from the user's sample applications.
 
-## Not yet checked on the ESP32
+## First ESP32 flash and startup checks
 
-The firmware has **not been flashed to the C3**. These remain hardware acceptance
-checks; passing a host test or linking a hardware backend does not satisfy them:
+The firmware and bootloader were subsequently flashed through native USB and
+esptool verified their hashes. The actual C3 passed AES-128/AES-256 encryption
+and decryption and SHA-256 self-tests. ATECC configuration reads succeeded at
+address `0x60`; PN532 HSU initialization returned firmware `0x32010607`.
+
+The first boot exposed an ESP-IDF GPIO ownership warning during the ATECC wake
+pulse. The HAL now resets the temporary GPIO configuration before returning
+the pins to the I2C driver. A reflash confirmed successful ATECC and PN532
+startup without those warnings.
+
+The USB `s` report now includes OSDP RX/TX byte counts, TX errors, loop ticks,
+RX pin level and DE pin readback. During the latest controller attempt,
+OSDP.Net attempted ten frames and received none. The MCU's RX count remained
+at one byte, TX at zero, with its task running and DE low. Secure Channel was
+not established. The RS-485 module/interface and wiring require checking;
+this is not evidence of successful card or phone authentication.
+
+## Remaining hardware acceptance checks
+
+Passing a host test or initializing the NFC chip does not satisfy these checks:
 
 1. Confirm the SuperMini header labels, solder joints, module supplies and 3.3 V
    logic levels, especially RS-485 RO.
-2. Flash and confirm the AES/SHA startup self-test on the real C3 peripheral.
+2. Repeat the now-passing AES/SHA startup check after a full cold power cycle.
 3. Confirm ATECC configuration reads and repeatable random/signature operations
    over the new I2C HAL. Do not provision or lock the chip as a diagnostic.
 4. Confirm PN532 cold boot, MCU-only reboot, discovery and APDU exchange over
-   the new HSU C driver.
+   the new HSU C driver beyond the already-passing initialization commands.
 5. Establish OSDP Secure Channel with OSDP.Net and the new local SCBK. A wrong
    key must fail. Confirm no credential events or feedback commands are accepted
    through an unsecured connection.
