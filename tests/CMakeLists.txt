@@ -13,6 +13,12 @@ foreach(file aes sha256 hash random wc_port wc_encrypt error memory logging ecc 
 endforeach()
 target_include_directories(wolf PUBLIC ${ROOT}/include ${WOLF})
 target_compile_definitions(wolf PUBLIC WOLFSSL_USER_SETTINGS READER_HOST_CRYPTO_TEST)
+include(CheckIncludeFile)
+check_include_file(strings.h READER_HAVE_STRINGS_H)
+if(READER_HAVE_STRINGS_H)
+    # Linux strict C11 declares strcasecmp in strings.h, not string.h.
+    target_compile_definitions(wolf PUBLIC HAVE_STRINGS_H)
+endif()
 add_library(wallet STATIC ${ROOT}/src/wallet_reader.c ${ROOT}/src/wallet_crypto.c)
 target_link_libraries(wallet PUBLIC wolf)
 target_compile_options(wallet PRIVATE -Wall -Wextra -Werror)
