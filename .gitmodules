@@ -1,0 +1,12 @@
+[submodule "dependencies/asymcred"]
+	path = dependencies/asymcred
+	url = https://github.com/Z-bit-Systems-LLC/AsymCred.git
+[submodule "dependencies/osdp-embedded"]
+	path = dependencies/osdp-embedded
+	url = https://github.com/Z-bit-Systems-LLC/OSDP-Embedded.git
+[submodule "dependencies/wolfssl"]
+	path = dependencies/wolfssl
+	url = https://github.com/wolfSSL/wolfssl.git
+[submodule "dependencies/cryptoauthlib"]
+	path = dependencies/cryptoauthlib
+	url = https://github.com/MicrochipTech/cryptoauthlib.git

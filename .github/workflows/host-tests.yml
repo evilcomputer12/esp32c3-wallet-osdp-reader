@@ -1,0 +1,19 @@
+name: C host regressions
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Configure C tests with sanitizers
+        run: cmake -S tests -B .build-host -DCMAKE_C_COMPILER=clang
+      - name: Build
+        run: cmake --build .build-host --parallel 4
+      - name: Test
+        run: ctest --test-dir .build-host --output-on-failure

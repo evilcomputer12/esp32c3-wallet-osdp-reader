@@ -1,0 +1,16 @@
+ESP32-C3 Wallet / PKOC OSDP Reader
+
+Project-authored C integration, configuration and documentation are licensed
+under GPL-3.0-or-later. See LICENSE.
+
+This repository builds on the STM32 PKOC OSDP Reader project and the work of
+Jonathan Horvath / bytedreamer and Z-bit Systems, LLC (AsymCred, OSDP-Embedded,
+OSDP.Net), wolfSSL, Microchip, Espressif and other credited contributors.
+
+Dependencies retain their original copyrights and license terms. This notice
+does not relicense dependencies or grant a blanket license for a combined
+firmware image. In particular, retain CryptoAuthLib's Microchip-specific terms.
+
+See docs/credits.md for source links, protocol research acknowledgements and
+license notice locations. This project is not sponsored or endorsed by the
+named companies, library authors or hardware sellers.

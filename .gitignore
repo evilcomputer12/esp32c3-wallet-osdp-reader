@@ -1,0 +1,12 @@
+.pio/
+.build-host/
+sdkconfig
+sdkconfig.old
+sdkconfig.*
+!sdkconfig.defaults
+config/*
+!config/README.md
+.DS_Store
+*.bin
+*.elf
+*.map

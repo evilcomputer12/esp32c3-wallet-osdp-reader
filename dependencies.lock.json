@@ -1,0 +1,18 @@
+{
+  "asymcred": {
+    "url": "https://github.com/Z-bit-Systems-LLC/AsymCred.git",
+    "commit": "ca675b8b033b6d9040e12adf9a94fc126e360907"
+  },
+  "osdp-embedded": {
+    "url": "https://github.com/Z-bit-Systems-LLC/OSDP-Embedded.git",
+    "commit": "9e496b4707765617d513d2fc7e4020716bf48313"
+  },
+  "wolfssl": {
+    "url": "https://github.com/wolfSSL/wolfssl.git",
+    "commit": "3c5eead44904df64e6a5a1f4ebdce377d35a849a"
+  },
+  "cryptoauthlib": {
+    "url": "https://github.com/MicrochipTech/cryptoauthlib.git",
+    "commit": "d49c7d578efb09d4a498d5ab86839d4c17812f15"
+  }
+}
