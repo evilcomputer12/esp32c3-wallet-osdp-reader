@@ -74,6 +74,17 @@ static void deliver(const uint8_t credential[32], unsigned provider) {
     ESP_LOGI("nfc", "credential queued provider=%u", provider);
   }
 }
+static const char *wallet_step_name(wallet_state_t state) {
+  switch (state) {
+  case WS_OSE: return "select-ose";
+  case WS_GOOGLE_SELECT: return "select-smarttap";
+  case WS_NEGOTIATE: return "negotiate";
+  case WS_GET_GOOGLE: return "get-data";
+  case WS_MORE_GOOGLE: return "more-data";
+  case WS_GET_APPLE: return "get-vas";
+  default: return "other";
+  }
+}
 static bool run_wallet(void) {
   wallet_hooks_t h = reader_wallet_hooks();
   if (!wallet_begin(&wallet, reader_wallet_config(), &h))
@@ -82,12 +93,26 @@ static bool run_wallet(void) {
   size_t cmd_n;
   for (unsigned steps = 0; steps < 24 && transaction_live(); ++steps) {
     size_t n = sizeof(response);
-    if (!wallet_next(&wallet, command, sizeof(command), &cmd_n) ||
-        !pn532_apdu(&pn, command, cmd_n, response, &n)) {
+    const char *step = wallet_step_name(wallet.state);
+    uint32_t started = reader_millis();
+    if (!wallet_next(&wallet, command, sizeof(command), &cmd_n)) {
+      ESP_LOGW("wallet", "step=%s command failed error=%u", step,
+               (unsigned)wallet.fault);
+      break;
+    }
+    if (!pn532_apdu(&pn, command, cmd_n, response, &n)) {
+      ESP_LOGW("wallet", "step=%s transport failed pn_error=%d pn_status=%d "
+                        "tx=%u duration_ms=%lu", step, pn.error, pn.last_status,
+               (unsigned)cmd_n, (unsigned long)(reader_millis() - started));
       wallet_transport_error(&wallet);
       break;
     }
     bool ok = wallet_feed(&wallet, response, n);
+    // Metadata only: never log APDU bodies, pass values or cryptographic keys.
+    ESP_LOGI("wallet", "step=%s tx=%u rx=%u sw=%04x error=%u duration_ms=%lu",
+             step, (unsigned)cmd_n, (unsigned)n, wallet.status,
+             (unsigned)wallet.fault,
+             (unsigned long)(reader_millis() - started));
     wallet_wipe(response, sizeof(response));
     if (!ok)
       break;

@@ -31,6 +31,10 @@ Additional dependencies and references:
   merchant secrets are not copied into this repository.
 - The [STM32 project](https://github.com/evilcomputer12/stm32-pkoc-osdp-reader)
   supplied the integration behavior and regression baseline for this C port.
+- Google's Smart Tap sample app, preserved in
+  [kmandalas/smart-tap-sample-app](https://github.com/kmandalas/smart-tap-sample-app/tree/192d1760bd8f44e8142dda6611c2a1314b35595b),
+  supplied the demo collector/key-version reference and the meaning of the
+  `9500` authentication status. Its Java code is not compiled into this reader.
 
 Project-authored source and documentation are GPL-3.0-or-later. This is not
 a blanket license for dependencies or a combined binary. Consult each pinned

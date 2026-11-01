@@ -4,9 +4,11 @@ A new PlatformIO + ESP-IDF project for the **ESP32-C3 SuperMini**, written in C.
 It combines PKOC, Apple VAS and Google Smart Tap with OSDP Secure Channel,
 a PN532 NFC reader and an ATECC608 secure element.
 
-**Status: flashed and booting on the ESP32-C3; hardware AES/SHA self-tests,
-ATECC configuration reads and PN532 initialization pass. RS-485 and credential
-delivery are still being validated.** Host regressions pass. This is a port of the
+**Status: flashed and running on the ESP32-C3; PKOC and Google's demo Smart Tap
+pass have delivered authenticated credentials through encrypted OSDP.Net on
+hardware. Wrong-key rejection and hardware AES/SHA self-tests also pass.
+Apple VAS and wider phone compatibility remain to be validated.**
+Host regressions pass. This is a port of the
 [STM32 reader](https://github.com/evilcomputer12/stm32-pkoc-osdp-reader), not a
 claim of Apple/Google/SIA certification. The STM32 project's bench results do
 not establish that this new ESP32 port works on hardware.
@@ -54,11 +56,11 @@ This does not mean PlatformIO itself is written in C.
 - Controller-driven onboard LED; an optional buzzer output, disabled by default.
 
 Wallet support needs the correct issuer/merchant configuration and a compatible
-pass. Sample project keys are **not** installed. ATECC merchant slots must
-already be provisioned for the requested operation. This firmware never writes,
-locks or provisions the secure element. Wallet RF discovery, real phone behavior
-and long-run reliability remain to be tested. ECP polling and compressed Smart
-Tap bundles are not implemented; the reader does not advertise compression.
+pass. The public repository includes **no merchant keys**. ATECC merchant slots
+must already be provisioned for the requested operation. This firmware never writes,
+locks or provisions the secure element. Broader wallet compatibility and
+long-run reliability remain under hardware validation. ECP polling and compressed
+Smart Tap bundles are not implemented; the reader does not advertise compression.
 
 ## Dependencies and licensing
 

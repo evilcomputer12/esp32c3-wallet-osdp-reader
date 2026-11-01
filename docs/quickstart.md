@@ -138,3 +138,30 @@ Present a known PKOC card, confirm an encrypted RAW event in the controller,
 hold it still, remove it fully and re-present it. Check wrong-key rejection
 and LED feedback next. See [validation](validation.md) for the remaining bench
 checks before enabling wallet passes.
+
+## 8. Diagnose a phone tap
+
+A vibration confirms NFC activity, not an authenticated pass read. Enable the
+matching wallet configuration, keep other cards away from the antenna and watch
+the USB log alongside the controller. A successful read must finish with
+`credential queued provider=2` for Google or `provider=1` for Apple, followed by
+an encrypted controller event.
+
+The `wallet` log names each exchange: `select-ose`, `select-smarttap`,
+`negotiate`, `get-data`, `more-data` or `get-vas`. It reports byte counts,
+status words, errors and elapsed milliseconds (including local cryptography).
+It does not print APDU bodies, private keys or pass values.
+
+- `sw=9000 error=0` means that step succeeded, not that the whole tap finished.
+- `step=negotiate ... sw=9500 error=8` means the phone rejected terminal
+  authentication. Check the collector ID, registered key version and matching
+  private key together. The reader stops without requesting or delivering a
+  credential.
+- `transport failed pn_error=... pn_status=...` means the PN532 exchange did
+  not produce a usable APDU response. This is distinct from a handset status
+  word. Check antenna position and the PN532 transport before changing keys.
+
+For Google's published demo, see the exact configuration and pass link in
+[the Google-authored sample app preserved here](https://github.com/kmandalas/smart-tap-sample-app/tree/192d1760bd8f44e8142dda6611c2a1314b35595b).
+That demo uses collector **20180608** and key version **1**. These values are
+specific to that demo; use your issuer's settings for your own passes.

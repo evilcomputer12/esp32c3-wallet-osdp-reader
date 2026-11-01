@@ -490,6 +490,8 @@ bool wallet_feed(wallet_reader_t *r, const uint8_t *p, size_t n) {
   r->waiting = false;
   r->status = (uint16_t)(p[n - 2]) << 8 | p[n - 1];
   n -= 2;
+  if (r->state == WS_NEGOTIATE && r->status == 0x9500)
+    return wallet_fail(r, WALLET_AUTHENTICATION);
   if (r->status == 0x9001 || r->status == 0x6a83)
     return wallet_fail(r, WALLET_NO_PASS);
   if (r->status == 0x6287 || r->status == 0x9302)

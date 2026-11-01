@@ -90,6 +90,26 @@ static void google(unsigned mode) {
   assert(next(out) == sizeof(fixture_google_negotiate_command));
   assert(!memcmp(out, fixture_google_negotiate_command,
                  sizeof(fixture_google_negotiate_command)));
+  if (mode == 3) {
+    // A handset can return an otherwise complete negotiation response with
+    // 9500. Do not derive session keys, send GET DATA or expose a credential.
+    size_t n = sizeof(fixture_google_negotiate_response);
+    memcpy(response, fixture_google_negotiate_response, n);
+    response[n - 2] = 0x95;
+    response[n - 1] = 0;
+    assert(!wallet_feed(&reader, response, n));
+    assert(reader.state == WS_FAILED && reader.fault == WALLET_AUTHENTICATION);
+    assert(reader.status == 0x9500);
+    size_t used = 123;
+    assert(!wallet_next(&reader, out, sizeof(out), &used) && used == 0);
+    const wallet_result_t empty = {0};
+    assert(!memcmp(&reader.result, &empty, sizeof(empty)));
+    const uint8_t zero_keys[sizeof(reader.keys)] = {0};
+    const uint8_t zero_ephemeral[sizeof(reader.ephemeral)] = {0};
+    assert(!memcmp(reader.keys, zero_keys, sizeof(zero_keys)));
+    assert(!memcmp(reader.ephemeral, zero_ephemeral, sizeof(zero_ephemeral)));
+    return;
+  }
   assert(wallet_feed(&reader, fixture_google_negotiate_response,
                      sizeof(fixture_google_negotiate_response)));
   assert(next(out) > 5 && out[1] == 0x50);
@@ -132,6 +152,7 @@ int main(void) {
   google(0);
   google(1);
   google(2);
+  google(3);
   begin();
   const uint8_t malformed[] = {0x6f, 0x80, 0x90, 0};
   assert(!wallet_feed(&reader, malformed, sizeof(malformed)));
