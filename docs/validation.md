@@ -10,18 +10,18 @@ eFuse programming or ATECC provisioning was performed.
 
 Build measurements will vary with settings and toolchain versions. The recorded
 release build uses PlatformIO Core 6.2.0, espressif32 8.0.0, ESP-IDF 6.1.0 and
-RISC-V GCC 15.2.0+20251204. The local SCBK is configured and Google Smart Tap
-is enabled for a demo-pass bench test; Apple is disabled locally. Both wallet
-protocol implementations and their cryptographic algorithms are compiled and
+RISC-V GCC 15.2.0+20251204. The local SCBK is configured; Google Smart Tap and
+Apple VAS are enabled together for demo-pass bench tests alongside PKOC. Both
+wallet implementations and their cryptographic algorithms are compiled and
 linked. Public example configuration still contains no operational keys.
 
 | Item | Bytes |
 |---|---:|
 | Physical Flash detected | 4,194,304 |
 | Factory application partition | 3,145,728 |
-| PlatformIO reported program use | 233,412 |
+| PlatformIO reported program use | 233,552 |
 | PlatformIO reported static RAM | 18,780 |
-| Application `.bin` file | 234,032 |
+| Application `.bin` file | 234,160 |
 
 Static RAM excludes dynamic task stacks, driver allocations, crypto allocations
 and other runtime heap use. The 3 MiB application partition is intentionally
@@ -109,9 +109,31 @@ controller events. This proves the tested demo configuration, not arbitrary
 Google passes or certification. The merchant signature used wolfCrypt in
 software; no claim of an ATECC-held merchant key is made.
 
-An Apple Wallet OSE response was also received while Apple was disabled. It
-was rejected as an unconfigured provider and produced no credential. This
-was not an Apple VAS authentication test.
+An Apple Wallet OSE response was initially received while Apple was disabled.
+It was rejected as an unconfigured provider and produced no credential.
+
+The user then confirmed the **PassKit NFC demo**. Apple was enabled locally
+with pass type `pass.com.passkit.pksamples.nfcdemo` and the matching private
+scalar from the supplied C sample, while retaining Google and PKOC. The
+combined image was flashed and hash-verified, and the AES/SHA startup checks,
+ATECC initialization, PN532 initialization and OSDP Secure Channel passed.
+
+The actual iPhone returned `9000` for OSE selection and GET VAS DATA. The
+reader validated the merchant key identifier and AES-256-GCM tag, decoded the
+pass and queued `provider=1`. OSDP.Net received two real encrypted 256-bit
+events, and the user confirmed two reads on the phone. These transactions took
+**786 ms** and **783 ms**, with zero NFC transaction failures at that point.
+This is a successful test of the manually opened PassKit demo; it does not
+establish automatic Wallet discovery or one event per presentation under all
+phone field/sleep behavior. Apple merchant ECDH used wolfCrypt in software;
+the ATECC merchant slots remain unchanged.
+
+During continued testing the PN532 logged intermittent transport timeouts
+and recovered automatically, after which another Apple credential was
+delivered in **778 ms**. A later `6287` user-action response produced no event;
+the next successful read of the same credential was suppressed while the
+presentation remained recorded. These observations do not establish that
+transport recovery or physical removal detection is reliable under all conditions.
 
 ## Remaining hardware acceptance checks
 
@@ -130,12 +152,12 @@ Passing a host test or initializing the NFC chip does not satisfy these checks:
    removal and re-presentation cycles.
 7. Test LED feedback, reader unplug/reconnect and controller disconnect during
    authentication. Old queued events must not survive a new session.
-8. Extend the successful Google demo test to sustained holding, removal,
-   other matched passes and phones. Configure and test Apple VAS separately.
-   ECP discovery and compressed bundles are unsupported.
+8. Extend the successful Google and Apple demo tests to sustained holding,
+   removal, other matched passes and phones. ECP discovery and compressed
+   bundles are unsupported.
 9. Measure task stack headroom, peak heap and OSDP latency during wallet
    cryptography, then run a sustained soak test.
 
-The measured PKOC and Google demo results above are limited bench results;
-they do not establish general wallet compatibility, cold-boot reliability or
-certification.
+The measured PKOC, Google demo and Apple demo results above are limited bench
+results; they do not establish general wallet compatibility, cold-boot
+reliability or certification.

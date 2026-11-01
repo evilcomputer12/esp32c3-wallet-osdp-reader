@@ -4,10 +4,10 @@ A new PlatformIO + ESP-IDF project for the **ESP32-C3 SuperMini**, written in C.
 It combines PKOC, Apple VAS and Google Smart Tap with OSDP Secure Channel,
 a PN532 NFC reader and an ATECC608 secure element.
 
-**Status: flashed and running on the ESP32-C3; PKOC and Google's demo Smart Tap
-pass have delivered authenticated credentials through encrypted OSDP.Net on
-hardware. Wrong-key rejection and hardware AES/SHA self-tests also pass.
-Apple VAS and wider phone compatibility remain to be validated.**
+**Status: flashed and running on the ESP32-C3; PKOC, Google's demo Smart Tap
+pass and the PassKit Apple VAS demo have delivered authenticated credentials
+through encrypted OSDP.Net on hardware. Wrong-key rejection and hardware
+AES/SHA self-tests also pass. Wider compatibility remains to be validated.**
 Host regressions pass. This is a port of the
 [STM32 reader](https://github.com/evilcomputer12/stm32-pkoc-osdp-reader), not a
 claim of Apple/Google/SIA certification. The STM32 project's bench results do
